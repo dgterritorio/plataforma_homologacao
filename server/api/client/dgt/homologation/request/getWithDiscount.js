@@ -1,0 +1,83 @@
+const db = require(__basedir + 'modules/db/base');
+const { parseMetadata } = require(__basedir + 'modules/requestUtils');
+
+const queries = Object.freeze({
+    4: {
+        head: 'select id, name ',
+        body: 'from homologation.request_states ',
+        where: ' where finished and code = 101 and now()::date - end_date::date <= 40 '
+    },
+    2: {
+        head: 'select id, name ',
+        body: 'from homologation.request_states ',
+        where: ' where applicant_id = $1 and finished and code = 101 and now()::date - end_date::date <= 40  ',
+        keys: ['userId']
+    }
+});
+
+async function getRequestInfo(params) {
+    let { head, body, where, keys } = queries[params.userGroup];
+    const values = keys ? keys.map(k => params[k]) : [];
+
+    // console.log(head, body, where, values);
+    // let head = "select id, name from homologation.request_states";
+    // let body = " where applicant_id = $1 and finished and code = 31 and now()::date - end_date::date <= 40 ";
+
+    const { paging, sorting, filters } = parseMetadata(params);
+
+    if (where) {
+        body += where;
+    }
+
+    if (filters.length) {
+        body += where ? ' and ' + filters : ' where ' + filters;
+    }
+
+    const mainSql = head + body + sorting + paging;
+
+    let result = await db.query(mainSql, values);
+
+    if (params.limit) {
+
+        let count = await db.query("select count(*) as total " + body, values);
+
+        if (count.hasOwnProperty('data') && count.data.length) {
+            let total = parseInt(count.data[0].total);
+
+            result.total = total;
+        }
+    } else {
+        result.total = result.data.length;
+    }
+
+    return result;
+}
+
+export default async function (req, res, next) {
+    console.log("> Request: Get document");
+    try {
+        const body = req.body;
+
+        const user = res.locals.user;
+
+        const params = {
+            userId: user.id,
+            userGroup: user.group,
+            limit: body.limit,
+            start: body.start,
+            sortBy: body.sortBy,
+            sortOrder: body.sortOrder,
+            filter: body.filter
+        };
+
+        let result = await getRequestInfo(params);
+
+        if (!result || result.error) {
+            throw result.error;
+        }
+
+        res.send({ data: result.data, error: null, total: result.total });
+    } catch (e) {
+        next(e);
+    }
+}

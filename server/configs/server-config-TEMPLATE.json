@@ -1,0 +1,53 @@
+{
+  "ServerConfig": {
+    "service": "",
+    "sessionsecret": "",
+    "enableUpload": true,
+    "fileUploadFolder": "",
+    "client": "",
+    "port": 3000,
+    "webRoot": "",
+    "development": {
+      "dbgeodashboard": "",
+      "smtp": {
+        "host": "",
+        "port": 465,
+        "secure": true,
+        "from": "",
+        "user": "",
+        "pass": ""
+      },
+      "nextcloud": {
+        "url": "",
+        "username": "",
+        "password": ""
+      },
+      "url": "",
+      "host": "",
+      "pdfsig": ""
+    },
+    "production": {
+      "dbgeodashboard": "",
+      "swaks": "",
+      "smtp": {
+        "host": "",
+        "port": 25,
+        "secure": false,
+        "from": ""
+      },
+      "nextcloud": {
+        "url": "",
+        "username": "",
+        "password": ""
+      },
+      "urlprefix": "",
+      "host": "",
+      "url": ""
+    }
+  },
+  "ClientConfig": {
+    "clientTitle": "",
+    "appTitle": "",
+    "author": ""
+  }
+}
